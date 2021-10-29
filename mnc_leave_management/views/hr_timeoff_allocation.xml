@@ -1,0 +1,73 @@
+<odoo>
+  <data>
+
+    <record id="hr_leave_allocation_view_form_inherited" model="ir.ui.view">
+        <field name="name">hr.leave.allocation.view.form.inherited</field>
+        <field name="model">hr.leave.allocation</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_allocation_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/group/group[1]/div[1]/label[1]" position="attributes">
+                <attribute name="attrs">{'invisible': ['|',('holiday_type', '=', 'company'),('allocation_type', '=', 'accrual')]}</attribute>
+            </xpath>
+            <xpath expr="//sheet/group/group[1]/div[1]/label[2]" position="attributes">
+                <attribute name="attrs">{'invisible': ['|',('holiday_type', '=', 'company'),('allocation_type', '!=', 'accrual')]}</attribute>
+            </xpath>
+            <xpath expr="//sheet/group/group[1]/div[2]" position="attributes">
+                <attribute name="attrs">{'invisible': [('holiday_type', '=', 'company')]}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='department_id']" position="after">
+                <field name="validity_start" string="Valid From" readonly="1" force_save="1" attrs="{'invisible':[('holiday_type', 'not in', ('employee','company'))]}"/>
+                <field name="validity_stop" string="Valid Thru" readonly="1" force_save="1" attrs="{'invisible':[('holiday_type', 'not in', ('employee','company'))]}"/>
+                <field name="extend_validity" readonly="1" force_save="1" attrs="{'invisible':['|',('holiday_type', 'not in', ('employee')),('extend_state','!=','approved')]}"/>
+                <field name="extend_state" readonly="1" force_save="1" attrs="{'invisible':['|',('holiday_type', 'not in', ('employee')),('extend_state','!=','waiting')]}"/>
+                <label for="extend_request_btn" string=" "/>
+                <div>
+                    <button name="extend_request_btn" string="Request Extend" type="object" class="oe_highlight" 
+                        attrs="{'invisible':['|',('holiday_type', 'not in', ('employee')),('extend_state','!=','no_request')]}"/>
+                    <button name="approve_extend_request" string="Approve Extend Request" type="object" class="oe_highlight" 
+                        attrs="{'invisible':['|',('holiday_type', 'not in', ('employee')),('extend_state','!=','waiting')]}"
+                        groups="hr_holidays.group_hr_holidays_manager"/>
+                    <br/>
+                    <button name="refuse_extend_request" string="Refuse Extend Request" type="object" 
+                        attrs="{'invisible':['|',('holiday_type', 'not in', ('employee')),('extend_state','!=','waiting')]}"
+                        groups="hr_holidays.group_hr_holidays_manager"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+    <record id="hr_leave_allocation_view_form_manager_inherited" model="ir.ui.view">
+        <field name="name">hr.leave.allocation.view.manager.form.inherited</field>
+        <field name="model">hr.leave.allocation</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_allocation_view_form_manager"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_approve']" position="attributes">
+                <attribute name="groups">hr_holidays.group_hr_holidays_manager</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_refuse']" position="attributes">
+                <attribute name="groups">hr_holidays.group_hr_holidays_manager</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="wizard_extend_date" model="ir.ui.view">
+        <field name="name">extend.date.wizard</field>
+        <field name="model">hr.leave.allocation.extend</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Extend Date">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="extend_validity" required="1"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button type="object" name="btn_send_request" string="Send Request" class="oe_highlight"/>
+                        <button special="cancel" string="Cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+  </data>
+</odoo>

@@ -1,0 +1,19 @@
+<odoo>
+    <data>
+
+    <!--Groups-->
+
+        <record id="make_invisible" model="res.groups">
+            <field name="name">Hidden Menu</field>
+        </record>
+
+    <!--Record Rules-->
+        <function name="write" model="ir.rule">
+            <function name="search" model="ir.rule">
+                <value eval="[('name', '=', 'Allocations: base.group_user create/write')]"/>
+            </function>
+            <value eval="{'active': False}"/>
+        </function>
+    
+    </data>
+</odoo>

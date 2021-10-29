@@ -1,0 +1,81 @@
+<odoo>
+    <data>
+        <!-- Menu Access -->
+        <record id="hr.menu_hr_employee" model="ir.ui.menu">
+            <field name="groups_id" eval="[(4, ref('mnc_leave_management.make_invisible'))]"/>
+        </record>
+
+        <record id="hr.menu_hr_department_kanban" model="ir.ui.menu">
+            <field name="groups_id" eval="[(6, 0, [ref('mnc_employee.group_hr_mgr')])]"/>
+        </record>
+
+        <record id="hr.menu_human_resources_configuration" model="ir.ui.menu">
+            <field name="groups_id" eval="[(6, 0, [ref('mnc_employee.group_hr_mgr')])]"/>
+        </record>
+
+        <!-- Menu Action -->
+
+        <record id="open_view_employee_list_my_data" model="ir.actions.act_window">
+            <field name="name">My Data</field>
+            <field name="res_model">hr.employee</field>
+            <field name="view_mode">kanban,tree,form,activity</field>
+            <field name="domain">[('user_id', '=', uid)]</field>
+            <field name="context">{'chat_icon': True}</field>
+            <field name="view_id" eval="False"/>
+            <field name="search_view_id" ref="hr.view_employee_filter"/>
+            <field name="help" type="html">
+             <p class="o_view_nocontent_smiling_face">
+               Add a new employee
+             </p><p>
+               With just a quick glance on the Odoo employee screen, you
+               can easily find all the information you need for each person;
+               contact data, job position, availability, etc.
+             </p>
+            </field>
+        </record>
+
+        <record id="open_view_employee_list_my_employee_data" model="ir.actions.act_window">
+            <field name="name">People I Manage</field>
+            <field name="res_model">hr.employee</field>
+            <field name="view_mode">kanban,tree,form,activity</field>
+            <field name="domain">[('parent_id.user_id', '=', uid)]</field>
+            <field name="context">{'chat_icon': True}</field>
+            <field name="view_id" eval="False"/>
+            <field name="search_view_id" ref="hr.view_employee_filter"/>
+            <field name="help" type="html">
+             <p class="o_view_nocontent_smiling_face">
+               Add a new employee
+             </p><p>
+               With just a quick glance on the Odoo employee screen, you
+               can easily find all the information you need for each person;
+               contact data, job position, availability, etc.
+             </p>
+            </field>
+        </record>
+
+        <!-- Menu Item -->
+        <menuitem
+            id="hr.menu_hr_employee_user"
+            name="My Data"
+            action="open_view_employee_list_my_data"
+            parent="hr.menu_hr_employee_payroll"
+            sequence="1"/>
+
+        <menuitem
+            id="menu_hr_employee_mgr"
+            name="People I Manage"
+            action="open_view_employee_list_my_employee_data"
+            parent="hr.menu_hr_employee_payroll"
+            sequence="2"
+            groups="mnc_employee.group_hr_mgr"/>
+
+        <menuitem
+            id="menu_hr_employee_all"
+            name="All Employee"
+            action="hr.open_view_employee_list_my"
+            parent="hr.menu_hr_employee_payroll"
+            sequence="3"
+            groups="hr.group_hr_manager"/>
+
+    </data>
+</odoo>

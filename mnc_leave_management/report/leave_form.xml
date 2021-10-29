@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <report 
+            string="Leave Request Form" 
+            id="action_print_leeave_request_form" 
+            model="hr.leave" 
+            report_type="qweb-pdf"
+            name="hris_mnc.leave_request_form" 
+            file="hris_mnc.leave_request_form" 
+            menu="True"
+        />
+
+        <template id="leave_request_form_document">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <t t-foreach="docs" t-as="doc">
+                        <div>
+                            <h3 class="text-center">FORMULIR KETERANGAN CUTI KARYAWAN</h3>
+                        </div>
+                        <div class="col-12">
+                            <div style="padding-right:32px; padding-top:20px;">
+                                <div class="pull-left">
+                                    <div class="row mb8">
+                                        <table style="width:110%;">
+                                            <tr>
+                                                <td style="height:40px;">
+                                                    <span>
+                                                        <strong style="font-size: 20px;">Data Karyawan </strong>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="height:35px;">
+                                                    <span style="padding-left: 15px; font-size: 18px;">Nama Lengkap </span>
+                                                </td>
+                                                <td style="height:35px;">
+                                                    : <span style="font-size: 18px;" t-field="doc.employee_id.name"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="height:35px;">
+                                                    <span style="padding-left: 15px; font-size: 18px;">Jabatan </span>
+                                                </td>
+                                                <td style="height:35px;">
+                                                    : <span style="font-size: 18px;" t-field="doc.employee_id.job_title"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="height:35px;">
+                                                    <span>
+                                                        <strong style="font-size: 20px;">Keterangan Cuti </strong>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="height:35px;">
+                                                    <span style="padding-left: 15px; font-size: 18px;">Jenis Cuti: </span>
+                                                </td>
+                                                <td style="height:35px;">
+                                                    : <span style="font-size: 18px;" t-field="doc.holiday_status_id.name"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="height:35px;">
+                                                    <span style="padding-left: 15px; font-size: 18px;">Tanggal Mulai </span>
+                                                </td>
+                                                <td style="height:35px;">
+                                                    : <span style="font-size: 18px;" t-field="doc.request_date_from"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="height:35px;">
+                                                    <span style="padding-left: 15px; font-size: 18px;">Tanggal Akhir </span>
+                                                </td>
+                                                <td style="height:35px;">
+                                                    : <span style="font-size: 18px;" t-field="doc.request_date_to"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="height:35px;">
+                                                    <span style="padding-left: 15px; font-size: 18px;">Keterangan </span>
+                                                </td>
+                                                <td style="height:35px;">
+                                                    : <span style="font-size: 18px;" t-field="doc.name"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" style="padding-left:300px; padding-top:40px;">
+
+                            <div class="col-6 pull-right">
+                                <div style="width:400px; float: right; font-weight: bold;">
+                                    <table style="width:400px; font-weight: bold;">
+                                        <tr>
+                                            <td class="text-center" style="width:200px; border: 1px white solid">
+                                                <span style="font-size: 18px;">Diajukan oleh</span>
+                                            </td>
+                                            <td t-if="(doc.holiday_status_id.leave_validation_type == 'manager' or doc.holiday_status_id.leave_validation_type == 'both')" 
+                                                class="text-center" style="width:200px; border: 1px white solid;">
+                                                <span style="font-size: 18px;">Manager</span>
+                                            </td>
+                                            <td t-if="(doc.holiday_status_id.leave_validation_type == 'hr' or doc.holiday_status_id.leave_validation_type == 'both')"
+                                                class="text-center" style="width:200px; border: 1px white solid;">
+                                                <span style="font-size: 18px;">HRD</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="height: 100px; vertical-align:middle; border: 1px white solid;">
+                                                <img t-if="doc.employee_id.user_id.esignature" t-attf-src="data:image/*;base64, {{doc.employee_id.user_id.esignature}}" style="height: 64px; max-width:190px; margin:0 auto; display: block;"/> 
+                                            </td>
+                                            <td t-if="(doc.holiday_status_id.leave_validation_type == 'manager' or doc.holiday_status_id.leave_validation_type == 'both')" 
+                                                style="height: 100px; vertical-align:middle; border: 1px white solid;">
+                                                <img t-if="(doc.department_id.manager_id.user_id.esignature and doc.state in ('validate1','validate'))" 
+                                                t-attf-src="data:image/*;base64, {{doc.department_id.manager_id.user_id.esignature}}" 
+                                                style="height: 64px; max-width:190px; margin:0 auto; display: block;"/> 
+                                            </td>
+                                            <td t-if="(doc.holiday_status_id.leave_validation_type == 'hr' or doc.holiday_status_id.leave_validation_type == 'both')"
+                                                style="height: 100px; vertical-align:middle; border: 1px white solid;">
+                                                <img t-if="(doc.second_approver_id.user_id.esignature and doc.state in ('validate'))" 
+                                                t-attf-src="data:image/*;base64, {{doc.second_approver_id.user_id.esignature}}" 
+                                                style="height: 64px; max-width:190px; margin:0 auto; display: block;"/> 
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-center" style="width:200px; border: 1px white solid">
+                                                <span style="font-size: 18px;" t-field="doc.employee_id.name"/>
+                                            </td>
+                                            <td class="text-center" style="width:200px; border: 1px white solid">
+                                                <span style="font-size: 18px;" t-field="doc.department_id.manager_id.name"/>
+                                            </td>
+                                            <td class="text-center" style="width:200px; border: 1px white solid">
+                                                <span style="font-size: 18px;" t-field="doc.second_approver_id.name"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </t>
+        </template>
+
+        <template id="leave_request_form">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="doc">
+                 <t t-call="hris_mnc.leave_request_form_document"/>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>

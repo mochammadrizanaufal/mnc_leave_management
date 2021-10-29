@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hr_family_member,hr_family_member,mnc_employee.model_hr_family_member,base.group_user,1,1,1,1
+access_hr_emergency_contact,hr_emergency_contact,mnc_employee.model_hr_emergency_contact,base.group_user,1,1,1,1
+access_hr_grade,hr_grade,mnc_employee.model_hr_grade,base.group_user,1,1,1,1
+access_hr_level,hr_level,mnc_employee.model_hr_level,base.group_user,1,1,1,1

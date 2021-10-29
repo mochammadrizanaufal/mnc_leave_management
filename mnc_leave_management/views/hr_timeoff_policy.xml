@@ -1,0 +1,93 @@
+<odoo>
+    <data>
+        <!-- FORM -->
+        <record id="hr_view_policy" model="ir.ui.view">
+            <field name="name">hr.view.policy</field>
+            <field name="model">hr.leave.policy.header</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                        <group>
+                            <group>
+                                <field name="company_id" readonly="1" force_save="1"/>
+                                <field name="active" widget="boolean_toggle"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Grade Matrix" name="grade">
+                                <field name="matrix_ids">
+                                    <tree>
+                                        <field name="header_id" invisible="1"/>
+                                        <field name="from_grade"/>
+                                        <field name="to_grade"/>
+                                        <field name="number_of_days" string="Number of Days"/>
+                                    </tree>
+                                    <form>
+                                        <group>
+                                            <label for="from_grade" string="Grade"/>
+                                            <div>
+                                                <span class="oe_inline">
+                                                    From
+                                                </span>
+                                                <field name="from_grade" class="oe_inline" nolabel="1" required="1"/>
+                                                <span class="oe_inline">
+                                                    To
+                                                </span>
+                                                <field name="to_grade" class="oe_inline" required="1"/>
+                                            </div>
+                                        </group>
+                                        <notebook>
+                                            <page string="Balances">
+                                                <field name="line_ids">
+                                                    <tree editable="bottom" create="false" delete="false">
+                                                        <field name="policy_id" invisible="1"/>
+                                                        <field name="month" readonly="1" force_save="1"/>
+                                                        <field name="number_of_days"/>
+                                                    </tree>
+                                                </field>
+                                            </page>
+                                        </notebook>
+                                        <group class="oe_subtotal_footer oe_right" name="days_total">
+                                            <field name="number_of_days" string="Total Days"/>
+                                        </group>
+                                    </form>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- TREE -->
+        <record id="hr_view_policy_tree" model="ir.ui.view">
+            <field name="name">hr.view.policy.tree</field>
+            <field name="model">hr.leave.policy.header</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="company_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- ACTION -->
+        <record id="action_view_policy_form" model="ir.actions.act_window">
+            <field name="name">Time Off Allocation Policy</field>
+            <field name="res_model">hr.leave.policy.header</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- MENUITEM -->
+        <!-- put the menu under the configuration, accessible only for manager -->
+        <menuitem
+            id="menu_view_policy"
+            name="Time Off Allocation Policy"
+            action="action_view_policy_form"
+            parent="hr_holidays.menu_hr_holidays_configuration"
+            sequence="1"/>
+    </data>
+</odoo>

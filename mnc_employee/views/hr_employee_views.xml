@@ -1,0 +1,229 @@
+<odoo>
+    <data>
+        <!-- FORM -->
+        <record id="view_employee_form_inherit" model="ir.ui.view">
+            <field name="name">view.employee.form.inherit</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//sheet/group" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//sheet/div[2]/h1" position="replace">
+                    <h1>
+                        <field name="name" placeholder="Employee's Name" required="True"/>
+                        <a title="Chat" icon="fa-comments" href="#" class="ml8 o_employee_chat_btn" invisible="not context.get('chat_icon')" attrs="{'invisible': [('user_id','=', False)]}" role="button"><i class="fa fa-comments"/></a>
+                    </h1>
+                </xpath>
+                <xpath expr="//notebook/page[@name='public']/div/div/group[1]" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//notebook/page[@name='public']/div/div/group[3]" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//notebook/page[@name='public']/div/div/group[4]" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//notebook/page[@name='personal_information']/group" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//notebook/page[@name='public']/div/div" position="inside">
+                    <group string="Contact Information">
+                        <field name="mobile_phone" widget="phone"/>
+                        <field name="work_phone" widget="phone"/>
+                        <field name="work_email" widget="email"/>
+                    </group>
+                    <group string="Position">
+                        <field name="company_id" groups="base.group_multi_company" readonly="0" options="{'no_create_edit': True, 'no_create': True, 'no_edit': True}"/>
+                        <field name="department_id" options="{'no_create_edit': True, 'no_create': True, 'no_edit': True}"/>
+                        <field name="job_id" options="{'no_create_edit': True, 'no_create': True, 'no_edit': True}"/>
+                        <field name="job_title_id"/>
+                        <field name="job_name_id"/>
+                        <field name="location_id"/>
+                        <field name="salary_grade_id"/>
+                        <field name="level_id"/>
+                        <field name="parent_id"/>
+                    </group>
+                    <group string="Status">
+                        <field name="employee_main_id"/>
+                        <field name="person_id"/>
+                        <field name="employment_status_id"/>
+                        <field name="date_join" required="1"/>
+                        <field name="date_resign" invisible="1"/>
+                        <field name="date_permanent"/>
+                        <field name="years_of_service" invisible="1"/>
+                        <field name="years_of_joining" invisible="1"/>
+                        <field name="years_of_joining" invisible="1"/>
+                        <label for="year_join" string="Years of Joining"/>
+                        <div>
+                            <field name="year_join" class="oe_inline"/> Year(s) <field name="month_join" class="oe_inline"/> Month(s)
+                        </div>
+                        <label for="year_service" string="Years of Service"/>
+                        <div>
+                            <field name="year_service" class="oe_inline"/> Year(s) <field name="month_service" class="oe_inline"/> Month(s)
+                        </div>
+                        <field name="user_id"/>
+                        <!-- <field name="user_id" options="{'no_create_edit': True, 'no_create': True, 'no_edit': True}"/> -->
+                    </group>
+                </xpath>
+
+                <xpath expr="//notebook/page[@name='personal_information']" position="inside">
+                    <group>
+                        <group string="KTP Information">
+                            <field name="country_id" required="1"/>
+                            <field name="family_card_number" required="1"/>
+                            <field name="identification_id" required="1"/>
+                            <field name="birthday" required="1"/>
+                            <label for="place_of_birth" string="Place of Birth"/>
+                            <div class="o_address_format">
+                                <field name="place_of_birth" placeholder="Place of Birth" class="o_address_city" required="1"/>
+                                <field name="country_of_birth" placeholder="Country of Birth" class="o_address_country" options='{"no_open": True, "no_create": True}' required="1"/>
+                            </div>
+                            <field name="age"/>
+                            <field name="gender" required="1"/>
+                            <field name="blood_type" required="1"/>
+                            <label for="ktp_street" string="Address"/>
+                            <div class="o_address_format">
+                                <field name="ktp_street" placeholder="Address line 1" class="o_address_street" required="1"/>
+                                <field name="ktp_street2" placeholder="Address Line 2" class="o_address_street"/>
+                                <field name="ktp_city" placeholder="City" class="o_address_city" required="1"/>
+                                <field name="ktp_state_id" placeholder="Province" class="o_address_state" required="1"
+                                    domain="[('country_id', '=', country_id)]" options="{'no_create_edit': True, 'no_create': True, 'no_edit': True, 'no_open': True}"/>
+                                <field name="ktp_zip" placeholder="Postal Code" class="o_address_zip" required="1"/>
+                            </div>
+                            <field name="religion_id" required="1"/>
+                            <field name="marital_status_id" required="1"/>
+                        </group>
+                        <group>
+                            <group string="Domicile Address" style="width:100%%">
+                                <label for="street" string="Address"/>
+                                <div class="o_address_format">
+                                    <field name="address_country_id" placeholder="Country" class="o_address_country" options='{"no_open": True, "no_create": True}' required="1"/>
+                                    <field name="street" placeholder="Address line 1" class="o_address_street" required="1"/>
+                                    <field name="street2" placeholder="Address Line 2" class="o_address_street"/>
+                                    <field name="city" placeholder="City" class="o_address_city" required="1"/>
+                                    <field name="state_id" placeholder="Province" class="o_address_state" domain="[('country_id', '=', address_country_id)]" required="1" options="{'no_create_edit': True, 'no_create': True, 'no_edit': True, 'no_open': True}"/>
+                                    <field name="zip" placeholder="Postal Code" class="o_address_zip" required="1"/>
+                                </div>
+                            </group>
+                            
+                            <group string="Education" style="width:100%%">
+                                <field name="institution_id" required="1"/>
+                                <field name="faculty_id" required="1"/>
+                                <field name="major_id" required="1"/>
+                                <field name="education_level_id" required="1"/>
+                            </group>
+                        </group>
+                        <group string="Dependant">
+                            <field name="spouse_complete_name"/>
+                            <field name="spouse_birthdate"/>
+                            <field name="children"/>
+                        </group>
+
+                    </group>
+                    <notebook>
+                        <page name="family_detail" string="Family Members">
+                            <field name="family_member_ids" nolabel="1">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="relation_id"/>
+                                    <field name="ktp"/>
+                                    <field name="passport"/>
+                                    <field name="gender"/>
+                                    <field name="marital"/>
+                                    <field name="religion_id"/>
+                                    <field name="last_education_id"/>
+                                    <field name="birthday"/>
+                                    <field name="place_of_birth"/>
+                                    <field name="occupation"/>
+                                    <field name="phone" widget="phone"/>
+                                </tree>
+                                <form>
+                                    <sheet>
+                                        <group>
+                                            <group>
+                                                <field name="name" required="1"/>
+                                                <field name="relation_id"/>
+                                                <field name="gender"/>
+                                                <field name="marital"/>
+                                                <field name="place_of_birth"/>
+                                                <field name="birthday"/>
+                                                <field name="phone" widget="phone"/>
+                                                <label for="street" string="Address"/>
+                                                <div class="o_address_format">
+                                                    <field name="street" placeholder="Address line 1" class="o_address_street"/>
+                                                    <field name="street2" placeholder="Address Line 2" class="o_address_street"/>
+                                                    <field name="city" placeholder="City" class="o_address_city"/>
+                                                    <field name="state_id" placeholder="Province" class="o_address_state" domain="[('country_id', '=', country_id)]" options="{'no_create_edit': True, 'no_create': True, 'no_edit': True, 'no_open': True}"/>
+                                                    <field name="zip" placeholder="Postal Code" class="o_address_zip"/>
+                                                    <field name="country_id" placeholder="Country" class="o_address_country" options='{"no_open": True, "no_create": True}'/>
+                                                </div>
+                                            </group>
+                                            <group>
+                                                <field name="religion_id"/>
+                                                <field name="last_education_id"/>
+                                                <field name="occupation"/>
+                                                <field name="ktp"/>
+                                                <field name="passport"/>
+                                            </group>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+                        <page name="emergency_contacts" string="Emergency Contacts">
+                            <field name="emergency_contact_ids" nolabel="1">
+                                <tree editable="bottom">
+                                    <field name="name" required="1"/>
+                                    <field name="relation_id" required="1"/>
+                                    <field name="street"/>
+                                    <field name="street2"/>
+                                    <field name="city"/>
+                                    <field name="country_id" options="{'no_create_edit': True, 'no_create': True, 'no_edit': True, 'no_open': True}"/>
+                                    <field name="state_id" domain="[('country_id', '=', country_id)]" options="{'no_create_edit': True, 'no_create': True, 'no_edit': True, 'no_open': True}"/>
+                                    <field name="zip"/>
+                                    <field name="email" widget="email"/>
+                                    <field name="phone" required="1" widget="phone"/>
+                                    <field name="mobile" required="1" widget="phone"/>
+                                    <field name="mobile_secondary"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </xpath>
+
+                <xpath expr="//notebook/page[@name='hr_settings']" position="replace">
+                    <page name="tax_info" string="Tax Information">
+                        <group>
+                            <group>
+                                <field name="has_npwp"/>
+                                <field name="npwp_name"
+                                       attrs="{'invisible': [('has_npwp', '=', False)], 'required': [('has_npwp', '=', True)]}"/>
+                                <field name="npwp"
+                                       attrs="{'invisible': [('has_npwp', '=', False)], 'required': [('has_npwp', '=', True)]}"/>
+                                <field name="npwp_address"
+                                       attrs="{'invisible': [('has_npwp', '=', False)], 'required': [('has_npwp', '=', True)]}"/>
+                                <field name="ptkp_id"/>
+                                <field name="status_ptkp_id" required="1"/>
+                            </group>
+                        </group>
+                    </page>
+                    <page name="insurance_info" string="Insurance Information">
+                        <group>
+                            <group>
+                                <field name="no_bpjs_kesehatan"/>
+                                <field name="no_bpjs_ketenagakerjaan"/>
+                                <field name="no_bpjs_pensiun"/>
+                                <field name="no_dplk"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</odoo>

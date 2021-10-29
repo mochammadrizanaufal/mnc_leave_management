@@ -1,0 +1,25 @@
+<odoo>
+  <data>
+        <record id="res_users_inherit" model="ir.ui.view">
+            <field name="name">res.users.inherit</field>
+            <field name="model">res.users</field>
+            <field name="inherit_id" ref="base.view_users_form"/>
+            <field name="arch" type="xml">
+                  <xpath expr="//group/field[@name='partner_id']" position="after">
+                    <field name="telegram_chat_id"/>
+                  </xpath>
+            </field>
+        </record>
+
+        <record id="res_users_view_form_profile_inherit" model="ir.ui.view">
+            <field name="name">res.users.preferences.form.inherit.mnc</field>
+            <field name="model">res.users</field>
+            <field name="inherit_id" ref="hr.res_users_view_form_profile"/>
+            <field name="arch" type="xml">
+                  <xpath expr="//group/group/field[@name='company_id']" position="after">
+                    <field name="esignature" readonly="0" widget="image" class="oe_right oe_avatar"/>
+                  </xpath>
+            </field>
+        </record>
+  </data>
+</odoo>

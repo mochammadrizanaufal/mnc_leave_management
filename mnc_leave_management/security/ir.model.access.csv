@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+hr_leave_policy,hr.leave.policy,model_hr_leave_policy,base.group_user,1,1,1,1
+hr_leave_policy_header,hr.leave.policy.header,model_hr_leave_policy_header,base.group_user,1,1,1,1
+hr_leave_policy_balance,hr.leave.policy.balance,model_hr_leave_policy_balance,base.group_user,1,1,1,1
+hr_leave_alloc_extend,hr.leave.alloc.extend,model_hr_leave_allocation_extend,base.group_user,1,1,1,1
+hr_mass_leave,hr.mass.leave,model_hr_mass_leave,base.group_user,1,1,1,1
