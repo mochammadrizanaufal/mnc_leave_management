@@ -1,9 +1,6 @@
 <odoo>
     <data>
         <!-- Menu Access -->
-        <record id="hr.menu_hr_employee" model="ir.ui.menu">
-            <field name="groups_id" eval="[(4, ref('mnc_leave_management.make_invisible'))]"/>
-        </record>
 
         <record id="hr.menu_hr_department_kanban" model="ir.ui.menu">
             <field name="groups_id" eval="[(6, 0, [ref('mnc_employee.group_hr_mgr')])]"/>

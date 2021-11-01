@@ -6,6 +6,11 @@
         <record id="make_invisible" model="res.groups">
             <field name="name">Hidden Menu</field>
         </record>
+    
+    <!--Menu Access-->
+        <record id="hr.menu_hr_employee" model="ir.ui.menu">
+            <field name="groups_id" eval="[(4, ref('make_invisible'))]"/>
+        </record>
 
     <!--Record Rules-->
         <function name="write" model="ir.rule">

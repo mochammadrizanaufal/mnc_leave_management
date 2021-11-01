@@ -21,6 +21,7 @@
         </record>
 
         <!--Menu Action-->
+                
         <record id="hr_permit_action_adm" model="ir.actions.act_window">
             <field name="name">All Employee Permit Requests</field>
             <field name="type">ir.actions.act_window</field>
@@ -191,7 +192,7 @@
             <field name="domain">[('employee_id.active','=',True),('employee_id.leave_manager_id', '=', uid),('state','!=','draft')]</field>
             <field name="context">{'hide_employee_name': 1}</field>
         </record>
-        
+                
         <!-- Self Service Menu-->
         <menuitem
             id="hr_holidays.menu_hr_holidays_my_leaves"

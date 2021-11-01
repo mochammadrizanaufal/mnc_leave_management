@@ -15,7 +15,7 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base','hr','mnc_leave_management'],
+    'depends': ['base','hr'],
 
     # always loaded
     'data': [

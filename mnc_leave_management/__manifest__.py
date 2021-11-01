@@ -18,7 +18,7 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'hr', 'hr_holidays'],
+    'depends': ['base', 'hr', 'hr_holidays','mnc_employee'],
 
     # always loaded
     'data': [
