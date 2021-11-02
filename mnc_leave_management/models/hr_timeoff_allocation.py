@@ -87,26 +87,29 @@ class HolidaysAllocation(models.Model):
 
     def _validate_create_childs(self, childs, employees, policy=None):
         for employee in employees:
+            current_year = datetime.strftime(date.today(), '%Y')
             join_day = datetime.strftime(employee.date_join, '%d')
             join_month = datetime.strftime(employee.date_join, '%m')
             join_year = datetime.strftime(employee.date_join, '%Y')
             validity_year = datetime.strftime(self.holiday_status_id.validity_start, '%Y')
             yos = employee._get_years_of_joining()
             number_of_days = 0
-
             validity_start = self.holiday_status_id.validity_start
             validity_stop = self.holiday_status_id.validity_stop
-
-            if yos < 1:
+            ydiff = int(validity_year) - int(join_year)
+            
+            if yos <= 1:
                 if join_year == validity_year:
                     continue
+                elif validity_year > current_year:
+                    if ydiff < 2:
+                        validity_start = employee.date_join + relativedelta(years=1)
+                        number_of_days = self.compute_number_of_days(policy, join_month, join_day)
+                    else:
+                        number_of_days = policy.number_of_days
                 else:
                     validity_start = employee.date_join + relativedelta(years=1)
-                    for line in policy.line_ids:
-                        if line.month >= join_month:
-                            number_of_days += line.number_of_days
-                        if line.month == join_month and join_day > '15':
-                            number_of_days = number_of_days - line.number_of_days
+                    number_of_days = self.compute_number_of_days(policy, join_month, join_day)
             else:
                 number_of_days = policy.number_of_days
 
@@ -121,6 +124,14 @@ class HolidaysAllocation(models.Model):
             child.holiday_status_id._subtract_balance(child)
         return childs
 
+    def compute_number_of_days(self, policy, join_month, join_day):
+        number_of_days = 0
+        for line in policy.line_ids:
+            if line.month >= join_month:
+                number_of_days += line.number_of_days
+            if line.month == join_month and join_day > '15':
+                number_of_days = number_of_days - line.number_of_days
+        return number_of_days
     
     def _prepare_holiday_values(self, employee, policy=None, number_of_days=None, validity_start=None, validity_stop=None):
         self.ensure_one()

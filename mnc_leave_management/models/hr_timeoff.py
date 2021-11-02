@@ -129,8 +129,8 @@ class HrLeave(models.Model):
         # if validation_type != 'both': this method calls action_validate() below
         if any(holiday.state != 'confirm' for holiday in self):
             raise UserError(_('Time off request must be confirmed ("To Approve") in order to approve it.'))
-
-        self.send_email_leave_request()
+        if not self.env.context.get('skip_mail_notif'):
+            self.send_email_leave_request()
         current_employee = self.env.user.employee_id
         self.filtered(lambda hol: hol.validation_type == 'both').write({'state': 'validate1', 'first_approver_id': current_employee.id})
 

@@ -54,7 +54,7 @@ class HrTimeoffType(models.Model):
         today = date.today()
 
         for mass_leave in self.mass_leave_ids:
-            if mass_leave.date >= allocation.employee_id.date_join:
+            if mass_leave.date > allocation.validity_start:
                 values = {
                     'allocation_id': allocation.id,
                     'holiday_status_id': self.id,
@@ -67,7 +67,7 @@ class HrTimeoffType(models.Model):
                     'date_to': mass_leave.date.strftime('%Y-%m-%d 10:00:00'),
                 }
                 leave = leave_obj.create(values)
-                leave.sudo().action_approve()
+                leave.sudo().with_context(skip_mail_notif=True).action_approve()
                 leave.sudo().action_validate()
 
 
