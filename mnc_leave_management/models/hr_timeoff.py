@@ -29,6 +29,7 @@ class HrLeave(models.Model):
         "\nThe status is 'Refused', when time off request is refused by manager." +
         "\nThe status is 'Approved', when time off request is approved by manager." +
         "\nThe status is 'Released', when leave request is verified by HR admin.")
+    attachment_id = fields.Binary(string='Attachment')
 
     @api.constrains('state', 'number_of_days', 'holiday_status_id')
     def _check_holidays(self):

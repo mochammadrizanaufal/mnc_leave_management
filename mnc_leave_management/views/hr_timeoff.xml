@@ -20,6 +20,9 @@
                     <attribute name="invisible">not context.get('permit_form')</attribute>
                     <attribute name="domain">[('time_off_type', '!=', 'paid')]</attribute>
                 </xpath>
+                <xpath expr="//field[@name='name']" position="after">
+                    <field name="attachment_id" invisible="not context.get('permit_form')" required="context.get('permit_form')"/>
+                </xpath>
             </field>
         </record>
 
