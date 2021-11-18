@@ -4,7 +4,7 @@ from dateutil.relativedelta import relativedelta
 from odoo.exceptions import ValidationError, UserError
 from odoo.tools import float_round
 from odoo.tools import DEFAULT_SERVER_DATE_FORMAT as DF
-
+import re
 
 import logging
 from lxml import etree
@@ -83,9 +83,14 @@ class HolidaysAllocation(models.Model):
                     self._validate_create_childs(childs, employees, policy)
 
         return childs
-        
 
     def _validate_create_childs(self, childs, employees, policy=None):
+        holiday_type_obj = self.env['hr.leave.type']
+        holiday_type_name = self.holiday_status_id.name
+        holiday_type_year = int(re.search(r'\d+', holiday_type_name).group()) - 1
+        name_param = 'Paid Leave %s' % holiday_type_year
+        hol_type = holiday_type_obj.search([('name', '=', name_param),('company_id', '=', self.mode_company_id.id)])
+
         for employee in employees:
             current_year = datetime.strftime(date.today(), '%Y')
             join_day = datetime.strftime(employee.date_join, '%d')
@@ -112,6 +117,13 @@ class HolidaysAllocation(models.Model):
                     number_of_days = self.compute_number_of_days(policy, join_month, join_day)
             else:
                 number_of_days = policy.number_of_days
+
+            if hol_type:
+                mapped_days = hol_type.get_employees_days(employee.ids)
+                remaining_days = mapped_days[employee.id][hol_type.id]
+
+                if remaining_days['remaining_leaves'] < 0:
+                    number_of_days = number_of_days - abs(remaining_days['remaining_leaves'] )
 
             childs += self.with_context(
                 mail_notify_force_send=False,

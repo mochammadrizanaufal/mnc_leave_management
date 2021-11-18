@@ -4,6 +4,7 @@ from odoo.tools import DEFAULT_SERVER_DATE_FORMAT as DF
 from odoo.exceptions import ValidationError
 from odoo.addons.hr_holidays.models.hr_leave import HolidaysRequest as HrLeaveRequest
 
+import re
 import logging
 import os
 import requests
@@ -28,6 +29,12 @@ class HrLeave(models.Model):
         "\nThe status is 'Refused', when time off request is refused by manager." +
         "\nThe status is 'Approved', when time off request is approved by manager." +
         "\nThe status is 'Released', when leave request is verified by HR admin.")
+
+    @api.constrains('state', 'number_of_days', 'holiday_status_id')
+    def _check_holidays(self):
+        #bypass constraint if there's minus remaining leaves balance
+        for holiday in self:
+            continue
 
     @api.model
     def default_get(self, fields_list):
@@ -94,11 +101,11 @@ class HrLeave(models.Model):
                     modifiers['readonly'] = "[('state', '!=', 'draft')]"
                     node.set('modifiers', json.dumps(modifiers))
 
-        for field in admin_fields:
-            for node in doc.xpath(field):
-                modifiers = json.loads(node.get('modifiers', '{}'))
-                modifiers['readonly'] = "[('state', 'in', ('validate1','validate'))]"
-                node.set('modifiers', json.dumps(modifiers))
+        # for field in admin_fields:
+        #     for node in doc.xpath(field):
+        #         modifiers = json.loads(node.get('modifiers', '{}'))
+        #         modifiers['readonly'] = "[('state', 'in', ('validate1','validate'))]"
+        #         node.set('modifiers', json.dumps(modifiers))
 
         res['arch'] = etree.tostring(doc)
         return res
@@ -114,14 +121,14 @@ class HrLeave(models.Model):
             holidays.sudo().action_validate()
 
         for holiday in self.filtered(lambda holiday: holiday.employee_id.user_id):
-            holiday.message_post(
+            holiday.sudo().message_post(
                 body=_(
                     'Your %(leave_type)s request planned on %(date)s has been notified to Mr./Mrs. %(superior)s',
                     leave_type=holiday.holiday_status_id.display_name,
                     date=holiday.date_from,
-                    superior=holiday.employee_id.leave_manager_id.name
+                    superior=holiday.employee_id.parent_id.user_id.name
                 ),
-                partner_ids=holiday.employee_id.user_id.partner_id.ids)
+                partner_ids=holiday.parent_id.employee_id.user_id.partner_id.ids)
         return True
 
     def action_approve(self):
@@ -136,7 +143,7 @@ class HrLeave(models.Model):
 
         # Post a second message, more verbose than the tracking message
         for holiday in self.filtered(lambda holiday: holiday.employee_id.user_id):
-            holiday.message_post(
+            holiday.sudo().message_post(
                 body=_(
                     'Your %(leave_type)s planned on %(date)s has been accepted',
                     leave_type=holiday.holiday_status_id.display_name,
@@ -152,7 +159,10 @@ class HrLeave(models.Model):
         mail_obj = self.env['mail.mail']
         mail_server = self.env['ir.mail_server'].sudo().search([])
         if self.state == 'draft':
-            superior = self.employee_id.leave_manager_id
+            if self.employee_id.parent_id:
+                superior = self.employee_id.parent_id.user_id
+            else:
+                superior = self.holiday_status_id.responsible_id
         else:
             superior = self.holiday_status_id.responsible_id
 
@@ -168,7 +178,7 @@ class HrLeave(models.Model):
                                                             ),
                 }
             ) 
-
+            _logger.info('email: %s', superior.work_email)
             mail_body = self.generate_mail_body_html(superior)
             mail_id = mail_obj.sudo().create({
                 'mail_message_id' : message_id.id,
