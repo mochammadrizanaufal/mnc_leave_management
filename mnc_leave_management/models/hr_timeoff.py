@@ -32,6 +32,18 @@ class HrLeave(models.Model):
         "\nThe status is 'Released', when leave request is verified by HR admin.")
     attachment_id = fields.Binary(string='Attachment')
     is_mass_leave = fields.Boolean(string='Is Mass Leave')
+    require_attachment = fields.Boolean("Require Attachment", related='holiday_status_id.require_attachment')
+    name = fields.Char('Reason', compute='_compute_description', inverse='_inverse_description', search='_search_description', compute_sudo=False)
+
+    @api.depends_context('uid')
+    def _compute_description(self):
+        for leave in self:
+            leave.name = leave.sudo().private_name
+
+    def _inverse_description(self):
+        for leave in self:
+            leave.sudo().private_name = leave.name
+
 
     @api.constrains('state', 'number_of_days', 'holiday_status_id')
     def _check_holidays(self):

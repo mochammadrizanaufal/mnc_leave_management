@@ -21,6 +21,12 @@
                 <xpath expr="//field[@name='name']" position="attributes">
                     <attribute name='required'>1</attribute>
                 </xpath>
+                <xpath expr="//label[@for='request_unit_half']" position="attributes">
+                    <attribute name='invisible'>1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='request_unit_half']" position="attributes">
+                    <attribute name='invisible'>1</attribute>
+                </xpath>
                 <xpath expr="//field[@name='holiday_status_id']" position="before">
                     <field name="allocation_id" required="1" options="{'no_create': True, 'no_open': True}" 
                     context="{'employee_id':employee_id, 'get_alloc_days': True}"
@@ -34,7 +40,8 @@
                 </xpath>
                 <xpath expr="//field[@name='name']" position="after">
                     <field name="is_mass_leave" invisible="1"/>
-                    <field name="attachment_id" invisible="not context.get('permit_form')" required="context.get('permit_form')"/>
+                    <field name="require_attachment" invisible="1"/>
+                    <field name="attachment_id" attrs="{'required':[('require_attachment', '=', True)], 'invisible':[('require_attachment', '!=', True)]}"/>
                 </xpath>
             </field>
         </record>
@@ -48,6 +55,8 @@
                     <attribute name='required'>1</attribute>
                 </xpath>
                 <xpath expr="//field[@name='holiday_status_id']" position="before">
+                    <field name="is_mass_leave" invisible="1"/>
+                    <field name="require_attachment" invisible="1"/>
                     <field name="allocation_id" required="1" options="{'no_create': True, 'no_open': True}" 
                     context="{'employee_id':employee_id, 'get_alloc_days': True}"
                     domain="[('state', 'in' , ('validate','validate1')),('employee_id', '=', employee_id),('validity_start', '&lt;=', context_today().strftime('%Y-%m-%d'))]"

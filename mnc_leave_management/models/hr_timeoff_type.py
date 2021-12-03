@@ -18,6 +18,7 @@ class HrTimeoffType(models.Model):
     mass_leave_ids = fields.One2many('hr.mass.leave', 'leave_type_id', 'Mass Leave Date')
     use_max_permit = fields.Boolean("Limit Permit Days", default=False)
     max_permit = fields.Integer("Max Permit Days")
+    require_attachment = fields.Boolean("Require Attachment", default=False)
 
     @api.model
     def create(self,vals):
@@ -34,6 +35,7 @@ class HrTimeoffType(models.Model):
 
     @api.onchange('time_off_type')
     def onchange_type(self):
+        self.require_attachment = False
         if self.time_off_type == 'paid':
             self.allocation_type = 'fixed'
             self.leave_validation_type = 'both'
