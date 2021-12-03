@@ -1,6 +1,18 @@
 <odoo>
     <data>
 
+        <record id="hr_leave_view_search_inherited" model="ir.ui.view">
+            <field name="name">hr.holidays.view.search.inherit</field>
+            <field name="model">hr.leave</field>
+            <field name="inherit_id" ref="hr_holidays.view_hr_holidays_filter"/>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@name='approve']" position="after">
+                    <filter domain="[('is_mass_leave','!=',True)]" string="Leave Requests" name="leave_request"/>
+                    <filter domain="[('is_mass_leave','=',True)]" string="Mass Leaves" name="mass_leave"/>
+                </xpath>
+            </field>
+        </record>
+
         <record id="hr_leave_form_inherit" model="ir.ui.view">
             <field name="name">hr.leave.form.inherit</field>
             <field name="model">hr.leave</field>
@@ -21,6 +33,7 @@
                     <attribute name="domain">[('time_off_type', '!=', 'paid')]</attribute>
                 </xpath>
                 <xpath expr="//field[@name='name']" position="after">
+                    <field name="is_mass_leave" invisible="1"/>
                     <field name="attachment_id" invisible="not context.get('permit_form')" required="context.get('permit_form')"/>
                 </xpath>
             </field>
@@ -48,100 +61,6 @@
                 </xpath>
             </field>
         </record>
-
-        <!-- <record id="hr_holidays.hr_leave_action_action_approve_department" model="ir.actions.act_window">
-            <field name="name">Leaves To Approve</field>
-            <field name="context">{'non_admin_no_create': True}</field>
-            <field name="domain">[('state', '=', ('confirm'))]</field>
-            <field name="help" type="html">
-                <p class="o_view_nocontent_smiling_face">
-                    Employee leave requests to be approved by their superiors
-                </p>
-            </field>
-        </record>
-
-        <record id="hr_leave_action_action_approve_department_to_release" model="ir.actions.act_window">
-            <field name="name">Leaves To Release</field>
-            <field name="res_model">hr.leave</field>
-            <field name="view_type">form</field>
-            <field name="view_mode">tree,kanban,form,calendar,activity</field>
-            <field name="context">{'non_admin_no_create': True}</field>
-            <field name="domain">[('state', '=', ('validate'))]</field>
-            <field name="help" type="html">
-                <p class="o_view_nocontent_smiling_face">
-                    Employee leave requests to be released by HR Admin
-                </p>
-            </field>
-        </record>
-
-        <record id="hr_leave_action_action_approve_department_all" model="ir.actions.act_window">
-            <field name="name">All Leaves</field>
-            <field name="res_model">hr.leave</field>
-            <field name="view_type">form</field>
-            <field name="view_mode">tree,kanban,form,calendar,activity</field>
-            <field name="context">{'non_admin_no_create': True}</field>
-            <field name="domain">[('state', 'not in', ('draft','cancel'))]</field>
-            <field name="help" type="html">
-                <p class="o_view_nocontent_smiling_face">
-                    All employee leave requests
-                </p>
-            </field>
-        </record>
-
-        <menuitem
-            id="hr_holidays.menu_hr_holidays_dashboard"
-            name="Overview"
-            parent="hr_holidays.menu_hr_holidays_root"
-            sequence="1"
-            action="hr_holidays.action_hr_holidays_dashboard"
-            groups="hr_holidays.group_hr_holidays_user"/>
-
-        <menuitem
-            id="hr_holidays.menu_hr_holidays_approvals"
-            name="Leave Requests"
-            parent="hr_holidays.menu_hr_holidays_root"
-            sequence="4"
-            groups="hr_holidays.group_hr_holidays_manager,hr_holidays.group_hr_holidays_user"/>
-
-        <menuitem
-            id="hr_holidays.menu_open_department_leave_approve"
-            name="Leaves To Approve"
-            parent="hr_holidays.menu_hr_holidays_approvals"
-            groups="hr_holidays.group_hr_holidays_user"
-            action="hr_holidays.hr_leave_action_action_approve_department"
-            sequence="1"/>
-
-        <menuitem
-            id="hr_holidays.menu_open_employee_leave"
-            name="Leaves To Release"
-            parent="hr_holidays.menu_hr_holidays_approvals"
-            groups="hr_holidays.group_hr_holidays_manager"
-            action="hr_leave_action_action_approve_department_to_release"
-            sequence="2"/>
-
-        <menuitem
-            id="menu_open_department_leave_approve_all"
-            name="All Leaves"
-            parent="hr_holidays.menu_hr_holidays_approvals"
-            groups="hr_holidays.group_hr_holidays_user"
-            action="hr_leave_action_action_approve_department_all"
-            sequence="3"/>
-
-        <menuitem
-            id="menu_hr_holidays_allocations"
-            name="Leave Allocations"
-            parent="hr_holidays.menu_hr_holidays_root"
-            sequence="4"
-            action="hr_holidays.hr_leave_allocation_action_all"
-            groups="hr_holidays.group_hr_holidays_manager,hr_holidays.group_hr_holidays_user"/>
-
-        <menuitem
-            id="hr_holidays.hr_holidays_status_menu_configuration"
-            action="hr_holidays.open_view_holiday_status"
-            name="Leave Types"
-            parent="hr_holidays.menu_hr_holidays_root"
-            groups="hr_holidays.group_hr_holidays_manager"
-            sequence="5"/> -->
 
     </data>
 </odoo>

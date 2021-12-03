@@ -142,7 +142,7 @@
         </record>
 
         <record id="hr_holidays.hr_leave_action_action_approve_department" model="ir.actions.act_window">
-            <field name="context">{'get_alloc_days_form': 1}</field>
+            <field name="context">{'get_alloc_days_form': 1, 'search_default_leave_request': 1}</field>
             <field name="domain">[('holiday_status_id.time_off_type','=','paid')]</field>
         </record>
 

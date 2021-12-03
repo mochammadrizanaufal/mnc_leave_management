@@ -11,12 +11,13 @@ class HrTimeoffType(models.Model):
 
     name = fields.Char('Time Off Type', required=False)
     time_off_type = fields.Selection([
-        ('paid', 'Paid Leave'),
-        ('sick', 'Sick Permit'),
-        ('compensatory', 'Compensatory'),
+        ('paid', 'Annual Leave'),
+        ('permit', 'Permit'),
         ('unpaid', 'Unpaid'),
     ], default="paid", string="Time Off Type")
     mass_leave_ids = fields.One2many('hr.mass.leave', 'leave_type_id', 'Mass Leave Date')
+    use_max_permit = fields.Boolean("Limit Permit Days", default=False)
+    max_permit = fields.Integer("Max Permit Days")
 
     @api.model
     def create(self,vals):
@@ -25,9 +26,10 @@ class HrTimeoffType(models.Model):
         if res.time_off_type == 'paid':
             valid_year = datetime.strftime(res.validity_start, '%Y')
             name = "%s %s" % (time_off_type, valid_year)
-        else:
+            res.name = name
+        elif res.time_off_type == 'unpaid':
             name = "%s" % time_off_type
-        res.name = name
+            res.name = name
         return res
 
     @api.onchange('time_off_type')
@@ -36,14 +38,12 @@ class HrTimeoffType(models.Model):
             self.allocation_type = 'fixed'
             self.leave_validation_type = 'both'
             self.color_name = 'lightblue'
+            self.use_max_permit = False
         else:
             self.allocation_type = 'no'
             self.leave_validation_type = 'both'
 
-            if self.time_off_type == 'sick':
-                self.color_name = 'magenta'
-
-            if self.time_off_type == 'compensatory':
+            if self.time_off_type == 'permit':
                 self.color_name = 'lightyellow'
 
             if self.time_off_type == 'unpaid':
@@ -65,6 +65,7 @@ class HrTimeoffType(models.Model):
                     'request_date_to': mass_leave.date,
                     'date_from': mass_leave.date.strftime('%Y-%m-%d 01:00:00'),
                     'date_to': mass_leave.date.strftime('%Y-%m-%d 10:00:00'),
+                    'is_mass_leave': True,
                 }
                 leave = leave_obj.create(values)
                 leave.sudo().with_context(skip_mail_notif=True).action_approve()

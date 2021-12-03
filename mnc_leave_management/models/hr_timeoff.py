@@ -2,6 +2,7 @@ from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 from odoo.tools import DEFAULT_SERVER_DATE_FORMAT as DF
 from odoo.exceptions import ValidationError
+from odoo.tools import float_compare
 from odoo.addons.hr_holidays.models.hr_leave import HolidaysRequest as HrLeaveRequest
 
 import re
@@ -30,12 +31,18 @@ class HrLeave(models.Model):
         "\nThe status is 'Approved', when time off request is approved by manager." +
         "\nThe status is 'Released', when leave request is verified by HR admin.")
     attachment_id = fields.Binary(string='Attachment')
+    is_mass_leave = fields.Boolean(string='Is Mass Leave')
 
     @api.constrains('state', 'number_of_days', 'holiday_status_id')
     def _check_holidays(self):
-        #bypass constraint if there's minus remaining leaves balance
+        mapped_days = self.mapped('holiday_status_id').get_employees_days(self.mapped('employee_id').ids)
         for holiday in self:
-            continue
+            if holiday.holiday_type != 'employee' or not holiday.employee_id or holiday.holiday_status_id.allocation_type == 'no' or holiday.is_mass_leave:
+                continue
+            leave_days = mapped_days[holiday.employee_id.id][holiday.holiday_status_id.id]
+            if float_compare(leave_days['remaining_leaves'], 0, precision_digits=2) == -1 or float_compare(leave_days['virtual_remaining_leaves'], 0, precision_digits=2) == -1:
+                raise ValidationError(_('The number of remaining time off is not sufficient for this time off type.\n'))
+              
 
     @api.model
     def default_get(self, fields_list):
@@ -112,6 +119,14 @@ class HrLeave(models.Model):
         return res
 
     def action_confirm(self):
+        if self.holiday_status_id.time_off_type == 'permit' and self.holiday_status_id.use_max_permit:
+            permits = self.search([('holiday_status_id', '=', self.holiday_status_id.id),('employee_id', '=', self.employee_id.id)])
+            sum_days = 0
+            for permit in permits:
+                sum_days += permit.number_of_days
+            if sum_days > self.holiday_status_id.max_permit:
+                raise ValidationError(_('Permit taken exceeds limit.'))
+
         if self.filtered(lambda holiday: holiday.state != 'draft'):
             raise UserError(_('Time off request must be in Draft state ("To Submit") in order to confirm it.'))
         self.send_email_leave_request()
@@ -243,6 +258,28 @@ class HrLeave(models.Model):
         </p>
         
         """ % (web_hyperlink)
+
+    def write(self, values):
+        employee_id = values.get('employee_id', False)
+        if not self.env.context.get('leave_fast_create'):
+            if values.get('state'):
+                self._check_approval_update(values['state'])
+                if any(holiday.validation_type == 'both' for holiday in self):
+                    if values.get('employee_id'):
+                        employees = self.env['hr.employee'].browse(values.get('employee_id'))
+                    else:
+                        employees = self.mapped('employee_id')
+                    self._check_double_validation_rules(employees, values['state'])
+            if 'date_from' in values:
+                values['request_date_from'] = values['date_from']
+            if 'date_to' in values:
+                values['request_date_to'] = values['date_to']
+        result = super(HrLeaveRequest, self).write(values)
+        if not self.env.context.get('leave_fast_create'):
+            for holiday in self:
+                if employee_id:
+                    holiday.add_follower(employee_id)
+        return result
 
 #     def _send_notif_telegram(self, leave):
 #         telegram_api_url = self.env['ir.config_parameter'].sudo().get_param('hris.telegram_api_url')
