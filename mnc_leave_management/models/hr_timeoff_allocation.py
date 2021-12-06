@@ -88,7 +88,7 @@ class HolidaysAllocation(models.Model):
         holiday_type_obj = self.env['hr.leave.type']
         holiday_type_name = self.holiday_status_id.name
         holiday_type_year = int(re.search(r'\d+', holiday_type_name).group()) - 1
-        name_param = 'Paid Leave %s' % holiday_type_year
+        name_param = 'Annual Leave %s' % holiday_type_year
         hol_type = holiday_type_obj.search([('name', '=', name_param),('company_id', '=', self.mode_company_id.id)])
 
         for employee in employees:
