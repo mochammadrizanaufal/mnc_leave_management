@@ -3,3 +3,4 @@ access_hr_family_member,hr_family_member,mnc_employee.model_hr_family_member,bas
 access_hr_emergency_contact,hr_emergency_contact,mnc_employee.model_hr_emergency_contact,base.group_user,1,1,1,1
 access_hr_grade,hr_grade,mnc_employee.model_hr_grade,base.group_user,1,1,1,1
 access_hr_level,hr_level,mnc_employee.model_hr_level,base.group_user,1,1,1,1
+access_hr_superior,hr_superior,mnc_employee.model_hr_superior,base.group_user,1,1,1,1

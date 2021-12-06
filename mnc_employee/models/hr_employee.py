@@ -23,7 +23,10 @@ class HrEmployee(models.Model):
     salary_grade_id = fields.Many2one('hr.grade', 'Grade', groups="hr.group_hr_user")
     level_id = fields.Many2one('hr.level', 'Level', ondelete='restrict', related='salary_grade_id.level_id', groups="hr.group_hr_user")
     location_id = fields.Char(string='Location', groups="hr.group_hr_user")
-    parent_id = fields.Many2one('hr.employee', 'Superior', domain=[], groups="hr.group_hr_user")
+    parent_id = fields.Many2one('hr.employee', 'Superior', compute="_compute_parent_id", store=True, readonly=False,
+        domain="[]", groups="hr.group_hr_user")
+    superior_ids = fields.One2many('hr.superior', 'employee_id', 'Superiors')
+    superior_ids_many2many = fields.One2many('hr.superior', 'employee_id', 'Superiors', related="superior_ids")
                                 
     #Status Information
     employee_main_id = fields.Char('NIK', copy=False, groups="hr.group_hr_user")
@@ -97,7 +100,25 @@ class HrEmployee(models.Model):
     no_bpjs_pensiun = fields.Char('No BPJS Pensiun', copy=False, groups="hr.group_hr_user")
     no_dplk = fields.Char('No DPLK', copy=False, groups="hr.group_hr_user")
 
-    #Method
+    #Methods
+
+    @api.depends('superior_ids')
+    def _compute_parent_id(self):
+        for superior in self.superior_ids:
+            if superior.is_main:
+                self.parent_id = superior.parent_id
+
+    @api.constrains('superior_ids')
+    def constraint_superior(self):
+        main = []
+        for superior in self.superior_ids:
+            if superior.is_main:
+                main += superior
+        if len(main) < 1:
+            raise ValidationError("Please set at least one main superior")
+        if len(main) > 1:
+            raise ValidationError("Can only set one main superior")
+
     @api.depends('birthday')
     def _compute_age(self):
         for rec in self:
