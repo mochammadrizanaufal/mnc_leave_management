@@ -34,6 +34,16 @@ class HrLeave(models.Model):
     is_mass_leave = fields.Boolean(string='Is Mass Leave')
     require_attachment = fields.Boolean("Require Attachment", related='holiday_status_id.require_attachment')
     name = fields.Char('Reason', compute='_compute_description', inverse='_inverse_description', search='_search_description', compute_sudo=False)
+    approver_ids = fields.Many2many('res.users',string='Approved By')
+    in_approver = fields.Boolean("In Approver", compute="compute_approver")
+
+    @api.depends('approver_ids')
+    def compute_approver(self):
+        for rec in self:
+            if self.env.user in rec.approver_ids:
+                rec.in_approver = True
+            else:
+                rec.in_approver = False
 
     @api.depends_context('uid')
     def _compute_description(self):
@@ -88,6 +98,13 @@ class HrLeave(models.Model):
                         end=vstop
                     ))
 
+    @api.model
+    def search(self, args, offset=0, limit=None, order=None, count=False):
+        if self.env.context.get('manager_form'):
+            superior = self.env['hr.superior'].search([('parent_id.user_id', '=', self.env.user.id)])
+            args += [('employee_id', 'in', superior.employee_id.ids)]
+
+        return super(HrLeave, self).search(args, offset, limit, order, count=count)
 
     def fields_view_get(self, view_id=None, view_type='form', toolbar=False, submenu=False):
         res = super(HrLeave, self).fields_view_get(
@@ -102,17 +119,11 @@ class HrLeave(models.Model):
             "//field[@name='name']"
             ]
 
-        admin_fields = [
-            "//field[@name='allocation_id']",
-            "//field[@name='holiday_status_id']",
-            "//field[@name='number_of_days']",
-            "//field[@name='name']"
-        ]
-
-        view_types = [
-            "/tree",
-            "/form"
-        ]
+        buttons = [
+            "//button[@name='action_approve']",
+            "//button[@name='action_refuse']", 
+            "//button[@name='action_draft']", 
+            ]
 
         for field in fields:
             for node in doc.xpath(field):
@@ -121,14 +132,53 @@ class HrLeave(models.Model):
                     modifiers['readonly'] = "[('state', '!=', 'draft')]"
                     node.set('modifiers', json.dumps(modifiers))
 
-        # for field in admin_fields:
-        #     for node in doc.xpath(field):
-        #         modifiers = json.loads(node.get('modifiers', '{}'))
-        #         modifiers['readonly'] = "[('state', 'in', ('validate1','validate'))]"
-        #         node.set('modifiers', json.dumps(modifiers))
+        # context = self._context
+        # params = context.get('params')
+        # if params:
+        #     model = params.get('model')
+        #     id = params.get('id')
+
+        #     if model == 'hr.leave':
+        #         leave = self.env['hr.leave'].browse(id)
+        #         for button in buttons:
+        #             for node in doc.xpath(button):
+        #                 if self.env.user in leave.approver_ids:
+        #                     modifiers = json.loads(node.get('modifiers', '{}'))
+        #                     modifiers['invisible'] = True
+        #                     node.set('modifiers', json.dumps(modifiers))
 
         res['arch'] = etree.tostring(doc)
         return res
+
+    def _check_approval_update(self, state):
+        """ Check if target state is achievable. """
+        if self.env.is_superuser():
+            return
+
+        current_employee = self.env.user.employee_id
+        is_officer = self.env.user.has_group('hr_holidays.group_hr_holidays_user')
+        is_manager = self.env.user.has_group('hr_holidays.group_hr_holidays_manager')
+
+        for holiday in self:
+            val_type = holiday.validation_type
+
+            if not is_manager and state != 'confirm':
+                if state == 'draft':
+                    if holiday.state == 'refuse':
+                        raise UserError(_('Only a Time Off Manager can reset a refused leave.'))
+                    if holiday.date_from and holiday.date_from.date() <= fields.Date.today():
+                        raise UserError(_('Only a Time Off Manager can reset a started leave.'))
+                    if holiday.employee_id != current_employee:
+                        raise UserError(_('Only a Time Off Manager can reset other people leaves.'))
+                else:
+                    if val_type == 'no_validation' and current_employee == holiday.employee_id:
+                        continue
+                    # use ir.rule based first access check: department, members, ... (see security.xml)
+                    holiday.check_access_rule('write')
+
+                    # This handles states validate1 validate and refuse
+                    if holiday.employee_id == current_employee:
+                        raise UserError(_('Only a Time Off Manager can approve/refuse its own requests.'))
 
     def action_confirm(self):
         if self.holiday_status_id.time_off_type == 'permit' and self.holiday_status_id.use_max_permit:
@@ -160,10 +210,31 @@ class HrLeave(models.Model):
         return True
 
     def action_approve(self):
-        # if validation_type == 'both': this method is the first approval approval
-        # if validation_type != 'both': this method calls action_validate() below
         if any(holiday.state != 'confirm' for holiday in self):
             raise UserError(_('Time off request must be confirmed ("To Approve") in order to approve it.'))
+        if self.holiday_status_id.multi_validation:
+            if self.employee_id.superior_ids:
+                superiors = []
+                for superior in self.employee_id.superior_ids:
+                    superiors += superior.parent_id.user_id
+                if self.env.user in superiors:
+                    self.approver_ids = [(4, self.env.user.id)]
+                    if len(self.approver_ids) == len(superiors):
+                        self.do_approve()
+                else:
+                    raise UserError(_("Time off request must appoved by Employee's Superior."))
+
+            else:
+                if self.env.user.id == self.holiday_status_id.responsible_id.id:
+                    self.approver_ids = [(4, self.env.user.id)]
+                    self.do_approve()
+                else:
+                    raise UserError(_('Time off request must appoved by HR Admin.'))
+        else:
+            self.approver_ids = [(4, self.env.user.id)]
+            self.do_approve()
+
+    def do_approve(self):
         if not self.env.context.get('skip_mail_notif'):
             self.send_email_leave_request()
         current_employee = self.env.user.employee_id
@@ -187,37 +258,39 @@ class HrLeave(models.Model):
         mail_obj = self.env['mail.mail']
         mail_server = self.env['ir.mail_server'].sudo().search([])
         if self.state == 'draft':
-            if self.employee_id.parent_id:
-                superior = self.employee_id.parent_id.user_id
+            if self.employee_id.superior_ids:
+                superiors = []
+                for super in self.employee_id.superior_ids:
+                    superiors += super.parent_id.user_id
             else:
-                superior = self.holiday_status_id.responsible_id
+                superiors = self.holiday_status_id.responsible_id
         else:
-            superior = self.holiday_status_id.responsible_id
+            superiors = self.holiday_status_id.responsible_id
 
-        if superior:
-            message_id = message_obj.create(
-                {
-                'message_type' : 'email',
-                'subject' : "%s's %s Request from %s to %s" % (
-                                                                self.employee_id.name, 
-                                                                self.holiday_status_id.name, 
-                                                                self.request_date_from.strftime(DF), 
-                                                                self.request_date_to.strftime(DF)
-                                                            ),
-                }
-            ) 
-            _logger.info('email: %s', superior.work_email)
-            mail_body = self.generate_mail_body_html(superior)
-            mail_id = mail_obj.sudo().create({
-                'mail_message_id' : message_id.id,
-                'state' : 'outgoing',
-                'auto_delete' : True,
-                'mail_server_id': mail_server[0].id,
-                'email_from' : 'no-reply@mncgroup.com',
-                'email_to' : superior.work_email,
-                'reply_to' : 'no-reply@mncgroup.com',
-                'body_html' : mail_body})
-            mail_id.sudo().send()
+        if superiors:
+            for superior in superiors:
+                message_id = message_obj.create(
+                    {
+                    'message_type' : 'email',
+                    'subject' : "%s's %s Request from %s to %s" % (
+                                                                    self.employee_id.name, 
+                                                                    self.holiday_status_id.name, 
+                                                                    self.request_date_from.strftime(DF), 
+                                                                    self.request_date_to.strftime(DF)
+                                                                ),
+                    }
+                ) 
+                mail_body = self.generate_mail_body_html(superior)
+                mail_id = mail_obj.sudo().create({
+                    'mail_message_id' : message_id.id,
+                    'state' : 'outgoing',
+                    'auto_delete' : True,
+                    'mail_server_id': mail_server[0].id,
+                    'email_from' : 'no-reply@mncgroup.com',
+                    'email_to' : superior.work_email,
+                    'reply_to' : 'no-reply@mncgroup.com',
+                    'body_html' : mail_body})
+                mail_id.sudo().send()
 
     def generate_mail_body_html(self, superior):
         html =  """
@@ -281,7 +354,6 @@ class HrLeave(models.Model):
                         employees = self.env['hr.employee'].browse(values.get('employee_id'))
                     else:
                         employees = self.mapped('employee_id')
-                    self._check_double_validation_rules(employees, values['state'])
             if 'date_from' in values:
                 values['request_date_from'] = values['date_from']
             if 'date_to' in values:

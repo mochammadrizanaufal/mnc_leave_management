@@ -19,6 +19,7 @@ class HrTimeoffType(models.Model):
     use_max_permit = fields.Boolean("Limit Permit Days", default=False)
     max_permit = fields.Integer("Max Permit Days")
     require_attachment = fields.Boolean("Require Attachment", default=False)
+    multi_validation = fields.Boolean("Multiple Superior Validation", default=False)
 
     @api.model
     def create(self,vals):
@@ -42,6 +43,7 @@ class HrTimeoffType(models.Model):
             self.color_name = 'lightblue'
             self.use_max_permit = False
         else:
+            self.multi_validation = False
             self.allocation_type = 'no'
             self.leave_validation_type = 'both'
 

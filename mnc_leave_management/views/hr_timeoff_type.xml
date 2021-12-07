@@ -43,6 +43,7 @@
                         attrs="{
                         'invisible': [('leave_validation_type', 'in', ['no_validation', 'manager']), '|', ('allocation_type', '=', 'no'), ('allocation_validation_type', '=', 'manager')],
                         'required': ['|', ('leave_validation_type', 'in', ['hr', 'both']), '&amp;', ('allocation_type', 'in', ['fixed_allocation', 'fixed']), ('allocation_validation_type', 'in', ['hr', 'both'])]}"/>
+                    <field name="multi_validation" attrs="{'invisible':[('time_off_type', '!=', 'paid')]}"/>
                     <field name="require_attachment" attrs="{'invisible':[('time_off_type', '!=', 'permit')]}"/>
                     <field name="use_max_permit" attrs="{'invisible':[('time_off_type', '!=', 'permit')]}"/>
                     <field name="max_permit" attrs="{'invisible':[('use_max_permit', '!=', True)]}"/>

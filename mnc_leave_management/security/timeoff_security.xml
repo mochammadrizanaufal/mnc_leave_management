@@ -19,6 +19,37 @@
             </function>
             <value eval="{'active': False}"/>
         </function>
+
+        <function name="write" model="ir.rule">
+            <function name="search" model="ir.rule">
+                <value eval="[('name', '=', 'Time Off base.group_user create/write')]"/>
+            </function>
+            <value eval="{'active': False}"/>
+        </function>
+
+        <function name="write" model="ir.rule">
+            <function name="search" model="ir.rule">
+                <value eval="[('name', '=', 'Time Off Responsible create/write')]"/>
+            </function>
+            <value eval="{'active': False}"/>
+        </function>
+
+        <function name="write" model="ir.rule">
+            <function name="search" model="ir.rule">
+                <value eval="[('name', '=', 'Time Off Responsible read')]"/>
+            </function>
+            <value eval="{'domain_force': [(1,'=',1)]}"/>
+        </function>
+
+        <record id="hr_leave_allocation_rule_responsible_read" model="ir.rule">
+            <field name="name">Allocations: see all time off: read all</field>
+            <field name="model_id" ref="model_hr_leave_allocation"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+            <field name="groups" eval="[(4, ref('hr_holidays.group_hr_holidays_responsible'))]"/>
+        </record>
     
     </data>
 </odoo>

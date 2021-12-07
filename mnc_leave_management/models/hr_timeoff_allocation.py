@@ -26,6 +26,46 @@ class HolidaysAllocation(models.Model):
          ('approved', 'Approved'),
     ], default="no_request", string="Extend Request")
 
+    def _check_approval_update(self, state):
+        """ Check if target state is achievable. """
+        if self.env.is_superuser():
+            return
+        current_employee = self.env.user.employee_id
+        if not current_employee:
+            return
+        is_officer = self.env.user.has_group('hr_holidays.group_hr_holidays_user')
+        is_manager = self.env.user.has_group('hr_holidays.group_hr_holidays_manager')
+        for holiday in self:
+            val_type = holiday.holiday_status_id.sudo().allocation_validation_type
+            if state == 'confirm':
+                continue
+
+            if state == 'draft':
+                if holiday.employee_id != current_employee and not is_manager:
+                    raise UserError(_('Only a time off Manager can reset other people allocation.'))
+                continue
+
+            if not is_officer and self.env.user != holiday.employee_id.leave_manager_id:
+                raise UserError(_('Only a time off Officer/Responsible or Manager can approve or refuse time off requests.'))
+
+            if is_officer or self.env.user == holiday.employee_id.leave_manager_id:
+                # use ir.rule based first access check: department, members, ... (see security.xml)
+                holiday.check_access_rule('write')
+
+            if holiday.employee_id == current_employee and not is_manager:
+                raise UserError(_('Only a time off Manager can approve its own requests.'))
+
+            if state == 'validate' and val_type == 'both':
+                if not is_officer:
+                    raise UserError(_('Only a Time off Approver can apply the second approval on allocation requests.'))
+
+    @api.model
+    def search(self, args, offset=0, limit=None, order=None, count=False):
+        if self.env.context.get('manager_form'):
+            superior = self.env['hr.superior'].search([('parent_id.user_id', '=', self.env.user.id)])
+            args += [('employee_id', 'in', superior.employee_id.ids)]
+
+        return super(HolidaysAllocation, self).search(args, offset, limit, order, count=count)
 
     def extend_request_btn(self):
         return {
