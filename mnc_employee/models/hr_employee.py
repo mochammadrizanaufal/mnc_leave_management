@@ -102,6 +102,14 @@ class HrEmployee(models.Model):
 
     #Methods
 
+    @api.model
+    def search(self, args, offset=0, limit=None, order=None, count=False):
+        if self.env.context.get('manager_form'):
+            superior = self.env['hr.superior'].search([('parent_id.user_id', '=', self.env.user.id)])
+            args += [('id', 'in', superior.employee_id.ids)]
+
+        return super(HrEmployee, self).search(args, offset, limit, order, count=count)
+
     @api.depends('superior_ids')
     def _compute_parent_id(self):
         for superior in self.superior_ids:
