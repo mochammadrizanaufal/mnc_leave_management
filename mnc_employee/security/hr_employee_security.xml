@@ -21,5 +21,12 @@
             <field name="implied_ids" eval="[(4, ref('group_hr_mgr')), (3, ref('hr.group_hr_user'))]"/>
             <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
         </record>
+
+        <function name="write" model="ir.rule">
+            <function name="search" model="ir.rule">
+                <value eval="[('name', '=', 'Department multi company rule')]"/>
+            </function>
+            <value eval="{'active': False}"/>
+        </function>
     </data>
 </odoo>
