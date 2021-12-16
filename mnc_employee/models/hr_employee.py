@@ -118,14 +118,15 @@ class HrEmployee(models.Model):
 
     @api.constrains('superior_ids')
     def constraint_superior(self):
-        main = []
-        for superior in self.superior_ids:
-            if superior.is_main:
-                main += superior
-        if len(main) < 1:
-            raise ValidationError("Please set at least one main superior")
-        if len(main) > 1:
-            raise ValidationError("Can only set one main superior")
+        if self.superior_ids:
+            main = []
+            for superior in self.superior_ids:
+                if superior.is_main:
+                    main += superior
+            if len(main) < 1:
+                raise ValidationError("Please set a main superior")
+            if len(main) > 1:
+                raise ValidationError("Can only set one main superior")
 
     @api.depends('birthday')
     def _compute_age(self):
