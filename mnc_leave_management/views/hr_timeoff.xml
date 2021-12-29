@@ -20,12 +20,17 @@
             <field name="arch" type="xml">
                 <xpath expr="//button[@name='action_approve']" position="attributes">
                     <attribute name='attrs'>{'invisible': ['|', ('in_approver', '=', True), ('state', '!=', 'confirm')]}</attribute>
-                </xpath>
+                    <attribute name='groups'>hr_holidays.group_hr_holidays_responsible</attribute>
+		</xpath>
                 <xpath expr="//button[@name='action_refuse']" position="attributes">
                     <attribute name='attrs'>{'invisible': ['|', ('in_approver', '=', True), ('state', 'not in', ('confirm','validate1','validate'))]}</attribute>
+		            <attribute name='groups'>hr_holidays.group_hr_holidays_responsible</attribute>
                 </xpath>
                 <xpath expr="//button[@name='action_draft']" position="attributes">
                     <attribute name='attrs'>{'invisible': ['|', ('in_approver', '=', True), ('state', 'not in', ('confirm','refuse'))]}</attribute>
+                </xpath>
+                <xpath expr="//button[@name='action_validate']" position="attributes">
+                    <attribute name='string'>Release</attribute>
                 </xpath>
                 <xpath expr="//field[@name='name']" position="attributes">
                     <attribute name='required'>1</attribute>
@@ -49,7 +54,7 @@
                 </xpath>
                 <xpath expr="//field[@name='name']" position="after">
                     <field name="approver_ids" widget="many2many_tags" readonly="1" force_save="1"/>
-                    <field name="in_approver"/>
+                    <field name="in_approver" invisible="1"/>
                     <field name="is_mass_leave" invisible="1"/>
                     <field name="require_attachment" invisible="1"/>
                     <field name="attachment_id" attrs="{'required':[('require_attachment', '=', True)], 'invisible':[('require_attachment', '!=', True)]}"/>
@@ -64,6 +69,9 @@
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='name']" position="attributes">
                     <attribute name='required'>1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='payslip_status']" position="attributes">
+                    <attribute name='invisible'>1</attribute>
                 </xpath>
                 <xpath expr="//field[@name='holiday_status_id']" position="before">
                     <field name="is_mass_leave" invisible="1"/>

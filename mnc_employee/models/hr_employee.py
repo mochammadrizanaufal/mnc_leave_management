@@ -104,7 +104,7 @@ class HrEmployee(models.Model):
 
     @api.model
     def search(self, args, offset=0, limit=None, order=None, count=False):
-        if self.env.context.get('manager_form'):
+        if self.env.context.get('manager_form') and not self.env.context.get('search_emp'):
             superior = self.env['hr.superior'].search([('parent_id.user_id', '=', self.env.user.id)])
             args += [('id', 'in', superior.employee_id.ids)]
 
@@ -118,14 +118,15 @@ class HrEmployee(models.Model):
 
     @api.constrains('superior_ids')
     def constraint_superior(self):
-        main = []
-        for superior in self.superior_ids:
-            if superior.is_main:
-                main += superior
-        if len(main) < 1:
-            raise ValidationError("Please set at least one main superior")
-        if len(main) > 1:
-            raise ValidationError("Can only set one main superior")
+        if self.superior_ids:
+            main = []
+            for superior in self.superior_ids:
+                if superior.is_main:
+                    main += superior
+            if len(main) < 1:
+                raise ValidationError("Please set at least one main superior")
+            if len(main) > 1:
+                raise ValidationError("Can only set one main superior")
 
     @api.depends('birthday')
     def _compute_age(self):

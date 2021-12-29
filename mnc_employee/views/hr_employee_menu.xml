@@ -74,5 +74,28 @@
             sequence="3"
             groups="hr.group_hr_manager"/>
 
+	<record id="hr.hr_department_tree_action" model="ir.actions.act_window">
+            <field name="name">Organization</field>
+        </record>
+
+        <record id="hr.hr_department_kanban_action" model="ir.actions.act_window">
+            <field name="name">Organization</field>
+        </record>
+
+        <menuitem
+          id="hr.menu_hr_department_tree"
+          name="Organization"
+          action="hr.hr_department_tree_action"
+          parent="hr.menu_human_resources_configuration"
+          sequence="2"
+          groups="hr.group_hr_user"/>
+
+        <menuitem
+          id="hr.menu_hr_department_kanban"
+          name="Organization"
+          action="hr.hr_department_kanban_action"
+          parent="hr.menu_hr_root"
+          groups="hr.group_hr_user"/>
+
     </data>
 </odoo>

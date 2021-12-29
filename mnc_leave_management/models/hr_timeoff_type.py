@@ -72,7 +72,7 @@ class HrTimeoffType(models.Model):
                     'is_mass_leave': True,
                 }
                 leave = leave_obj.create(values)
-                leave.sudo().with_context(skip_mail_notif=True).action_approve()
+                leave.sudo().with_context(skip_mail_notif=True, bypass_approval=True).action_approve()
                 leave.sudo().action_validate()
 
 
@@ -83,3 +83,11 @@ class HrHoliday(models.Model):
     name = fields.Char('Description')
     date = fields.Date('Date')
     leave_type_id = fields.Many2one('hr.leave.type')
+
+    def unlink(self):
+        leaves = self.env['hr.leave'].search([('holiday_status_id', '=', self.leave_type_id.id),('name', '=', self.name),('request_date_from', '=', self.date)])
+        for leave in leaves:
+            leave.sudo().action_refuse()
+            leave.sudo().action_draft()
+            leave.sudo().unlink()
+        return super(HrHoliday, self).unlink()

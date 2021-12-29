@@ -37,6 +37,11 @@ class HrLeave(models.Model):
     approver_ids = fields.Many2many('res.users',string='Approved By')
     in_approver = fields.Boolean("In Approver", compute="compute_approver")
 
+    def action_draft(self):
+        res = super(HrLeave, self).action_draft()
+        self.approver_ids = False
+        return res
+
     @api.depends('approver_ids')
     def compute_approver(self):
         for rec in self:
@@ -210,9 +215,11 @@ class HrLeave(models.Model):
         return True
 
     def action_approve(self):
+        ctx = self.env.context
+        _logger.info('ctx: %s', ctx)
         if any(holiday.state != 'confirm' for holiday in self):
             raise UserError(_('Time off request must be confirmed ("To Approve") in order to approve it.'))
-        if self.holiday_status_id.multi_validation:
+        if self.holiday_status_id.multi_validation and not self.env.context.get('bypass_approval'):
             if self.employee_id.superior_ids:
                 superiors = []
                 for superior in self.employee_id.superior_ids:
@@ -261,11 +268,13 @@ class HrLeave(models.Model):
             if self.employee_id.superior_ids:
                 superiors = []
                 for super in self.employee_id.superior_ids:
-                    superiors += super.parent_id.user_id
+                    superiors += super.parent_id
             else:
-                superiors = self.holiday_status_id.responsible_id
+                resp_user = self.holiday_status_id.responsible_id
+                superiors = self.env['hr.employee'].with_context(search_emp=True).search([('user_id', '=', resp_user.id)], limit=1)
         else:
-            superiors = self.holiday_status_id.responsible_id
+            resp_user = self.holiday_status_id.responsible_id
+            superiors = self.env['hr.employee'].with_context(search_emp=True).search([('user_id', '=', resp_user.id)], limit=1)
 
         if superiors:
             for superior in superiors:
@@ -296,7 +305,7 @@ class HrLeave(models.Model):
         html =  """
 <p style="margin:0px 0px 10px 0px;"></p>
 <div style="font-family: 'Lucida Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
-    <p style="margin:0px 0px 10px 0px;font-weight: bold">Hello Mr / Mrs %s,</p>""" % (superior.employee_id.name)
+    <p style="margin:0px 0px 10px 0px;font-weight: bold">Hello Mr / Mrs %s,</p>""" % (superior.name)
 
 
         html +="""

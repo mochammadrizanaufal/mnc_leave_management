@@ -236,5 +236,16 @@
             </field>
         </record>
 
+	<record id="view_hr_job_form_inherit" model="ir.ui.view">
+            <field name="name">view.job.form.inherit</field>
+            <field name="model">hr.job</field>
+            <field name="inherit_id" ref="hr.view_hr_job_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='department_id']" position="attributes">
+                        <attribute name="string">Organization</attribute>
+                </xpath>
+            </field>
+        </record>
+
     </data>
 </odoo>
