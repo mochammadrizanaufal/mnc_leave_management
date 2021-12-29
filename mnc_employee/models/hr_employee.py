@@ -124,7 +124,7 @@ class HrEmployee(models.Model):
                 if superior.is_main:
                     main += superior
             if len(main) < 1:
-                raise ValidationError("Please set at least one main superior")
+                raise ValidationError("Please set a main superior")
             if len(main) > 1:
                 raise ValidationError("Can only set one main superior")
 
